@@ -77,30 +77,7 @@ def create_app(key=None, sources=None):
             vk_user_agent = os.environ.get("VK_CATALOG_USER_AGENT", "").strip() or "Localify/2.1"
             app.state.providers = list(sources) if sources is not None else [
                 *([VkProvider(vk, vk_user_agent)] if vk else []), AudiusProvider(http)]
-            app.state.hitmox_check = {"state": "pending"}
-            async def probe_hitmox():
-                try:
-                    async with asyncio.timeout(8):
-                        async with http.stream("GET", "https://ru.hitmox.net/search",
-                                               params={"q": "System of a Down"}) as resp:
-                            body = bytearray()
-                            if resp.status_code == 200:
-                                async for chunk in resp.aiter_bytes(chunk_size=8192):
-                                    body.extend(chunk)
-                                    if len(body) >= 262144:
-                                        break
-                            app.state.hitmox_check = {
-                                "http": resp.status_code, "mp3_links": body.count(b"/get/music/")
-                            }
-                except (httpx.HTTPError, TimeoutError) as exc:
-                    app.state.hitmox_check = {"error": type(exc).__name__}
-                log.warning("HITMOX_CHECK %s", app.state.hitmox_check)
-            probe = asyncio.create_task(probe_hitmox())
-            try:
-                yield
-            finally:
-                probe.cancel()
-                await asyncio.gather(probe, return_exceptions=True)
+            yield
 
     app = FastAPI(title="Localify Music", version="2.1", lifespan=lifespan,
                   docs_url=None, redoc_url=None, openapi_url=None)
@@ -121,10 +98,6 @@ def create_app(key=None, sources=None):
             raise HTTPException(401, "Проверьте ключ сервера")
         if not request.app.state.total.allow("global"):
             raise HTTPException(429, "Сервер занят", headers={"Retry-After": "15"})
-
-    @app.get("/hitmox-check-20261122")
-    async def hitmox_check(request: Request):
-        return request.app.state.hitmox_check
 
     @app.get("/healthz")
     async def health():
