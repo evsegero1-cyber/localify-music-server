@@ -1,0 +1,43 @@
+services:
+  music:
+    build:
+      context: .
+      args:
+        INSTALL_VK: ${INSTALL_VK:-0}
+    environment:
+      LOCALIFY_API_KEY: ${LOCALIFY_API_KEY:?Set LOCALIFY_API_KEY in .env}
+      VK_CATALOG_TOKEN: ${VK_CATALOG_TOKEN:-}
+    restart: unless-stopped
+    read_only: true
+    init: true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz',timeout=3)"]
+      interval: 25s
+      timeout: 5s
+      retries: 3
+    logging:
+      options:
+        max-size: "5m"
+        max-file: "3"
+  caddy:
+    image: caddy:2-alpine
+    environment:
+      LOCALIFY_DOMAIN: ${LOCALIFY_DOMAIN:?Set LOCALIFY_DOMAIN in .env}
+    depends_on:
+      music:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - tls_data:/data
+      - tls_config:/config
+    restart: unless-stopped
+    logging:
+      options:
+        max-size: "5m"
+        max-file: "3"
+volumes:
+  tls_data:
+  tls_config:
