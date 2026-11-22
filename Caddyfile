@@ -1,0 +1,4 @@
+{$LOCALIFY_DOMAIN} {
+    encode zstd gzip
+    reverse_proxy music:8000
+}
