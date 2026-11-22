@@ -74,8 +74,9 @@ def create_app(key=None, sources=None):
         async with httpx.AsyncClient(timeout=httpx.Timeout(5, connect=3), trust_env=False,
                                      limits=httpx.Limits(max_connections=18), headers={"User-Agent": "Localify/2.1"}) as http:
             vk = os.environ.get("VK_CATALOG_TOKEN", "").strip()
+            vk_user_agent = os.environ.get("VK_CATALOG_USER_AGENT", "").strip() or "Localify/2.1"
             app.state.providers = list(sources) if sources is not None else [
-                *([VkProvider(vk)] if vk else []), AudiusProvider(http)]
+                *([VkProvider(vk, vk_user_agent)] if vk else []), AudiusProvider(http)]
             yield
 
     app = FastAPI(title="Localify Music", version="2.1", lifespan=lifespan,

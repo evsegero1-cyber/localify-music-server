@@ -133,8 +133,9 @@ class AudiusProvider:
 class VkProvider:
     name = "vk"
 
-    def __init__(self, token: str):
+    def __init__(self, token: str, user_agent: str = "Localify/2.1"):
         self.token = token
+        self.user_agent = user_agent
 
     async def search(self, query: str, scope: str, limit: int) -> list[Track]:
         if scope == "album":
@@ -144,7 +145,7 @@ class VkProvider:
             for name, logger in logging.Logger.manager.loggerDict.items():
                 if name.startswith("vkpymusic") and isinstance(logger, logging.Logger):
                     logger.disabled = True
-            service = Service("Localify/2.1", self.token)
+            service = Service(self.user_agent, self.token)
             songs = await asyncio.wait_for(service.search_songs_by_text_async(query, count=limit), 5)
         except Exception:
             raise Unavailable("VK catalog unavailable") from None

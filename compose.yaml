@@ -7,6 +7,7 @@ services:
     environment:
       LOCALIFY_API_KEY: ${LOCALIFY_API_KEY:?Set LOCALIFY_API_KEY in .env}
       VK_CATALOG_TOKEN: ${VK_CATALOG_TOKEN:-}
+      VK_CATALOG_USER_AGENT: ${VK_CATALOG_USER_AGENT:-}
     restart: unless-stopped
     read_only: true
     init: true
