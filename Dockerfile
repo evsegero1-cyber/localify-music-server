@@ -1,5 +1,5 @@
 FROM python:3.12-slim
-ARG INSTALL_VK=0
+ARG INSTALL_VK=1
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 WORKDIR /app
 COPY requirements.txt requirements-vk.txt ./
