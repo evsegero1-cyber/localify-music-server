@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: localify-music
+    runtime: docker
+    plan: free
+    dockerContext: .
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /healthz
+    envVars:
+      - key: LOCALIFY_API_KEY
+        generateValue: true
